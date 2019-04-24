@@ -6,11 +6,12 @@
 #define Enviroment_h
 
 #include "Arduino.h"
+#include <ArduinoJson.h>
 
 struct EnviromentData {
-  int temperature;
-  int humidity;
-  int light;
+  float temperature;
+  unsigned int humidity;
+  unsigned int light;
 };
 
 class Enviroment
@@ -20,11 +21,12 @@ class Enviroment
     void readData();
     bool isDaylight();
     EnviromentData getData();
+    DynamicJsonDocument toJSON();
 
   private:
-    int tempPin;
-    int humPin;
-    int photoPin;
+    unsigned int tempPin;
+    unsigned int humPin;
+    unsigned int photoPin;
     EnviromentData data;
 };
 

@@ -50,15 +50,22 @@ void WaterPump::readData() {
   }
 }
 
+void WaterPump::loop() {
+  if(isOn()){
+    checkWaterLevel();
+  }
+}
+
 bool WaterPump::on(bool ignoreFlowSensor) {
-  if (checkWaterLevel()) {
-    digitalWrite(relayPin, HIGH);
+  if (ignoreFlowSensor || checkWaterLevel()) {
+    digitalWrite(relayPin, LOW);
     data.pumpState = WaterPumpState::PUMP_ON;
     return true;
   }
+  return false;
 }
 
 void WaterPump::off(enum WaterPumpState newState) {
   data.pumpState = newState;
-  digitalWrite(relayPin, LOW);
+  digitalWrite(relayPin, HIGH);
 }

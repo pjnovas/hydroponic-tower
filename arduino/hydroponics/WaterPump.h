@@ -30,6 +30,7 @@ class WaterPump
     bool hasError();
     WaterPumpData getData();
     void readData();
+    void loop();
 
   private:
     int relayPin;

@@ -37,6 +37,6 @@ const float PROGMEM amt1001_lookuptable[amt1001_lookuptablesize] = {
 
 //functions
 int16_t amt1001_gethumidity(double voltage);
-int16_t amt1001_gettemperature(uint16_t adcvalue);
+float amt1001_gettemperature(uint16_t adcvalue);
 
 #endif

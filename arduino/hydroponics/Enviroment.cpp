@@ -2,6 +2,7 @@
 #include "Arduino.h"
 #include "Enviroment.h"
 #include "amt1001_ino.h"
+#include <ArduinoJson.h>
 
 Enviroment::Enviroment() {  
   tempPin = PIN_ENV_TEMP;
@@ -15,6 +16,19 @@ Enviroment::Enviroment() {
 
 EnviromentData Enviroment::getData() {
   return data;
+}
+
+DynamicJsonDocument Enviroment::toJSON() {
+  // More info at https://arduinojson.org/v6/assistant/
+
+  const size_t capacity = JSON_OBJECT_SIZE(3);
+  DynamicJsonDocument doc(capacity);
+  
+  doc["temperature"] = data.temperature;
+  doc["humidity"] = data.humidity;
+  doc["light"] = data.light;
+
+  return doc;
 }
 
 void Enviroment::readData() {

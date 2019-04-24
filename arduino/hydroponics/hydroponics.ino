@@ -3,37 +3,49 @@
 #include "WaterPump.h"
 #include "Enviroment.h"
 #include "SimpleTimer.h"
+#include <ArduinoJson.h>
 
 WaterPump waterPump;
 Enviroment enviroment;
 SimpleTimer timer;
 
+unsigned int envReadTimer;
+
+void startWaterPump() {
+  if(waterPump.on()) {
+    timer.setTimeout(RATE_WATER_PUMP_FLOW, []() {
+      waterPump.off();
+      timer.setTimeout(RATE_WATER_PUMP_START, startWaterPump);
+    });
+  }
+  else {
+    // Could not start, RETRY later
+    timer.setTimeout(RATE_WATER_PUMP_START_RETRY, startWaterPump);
+  }
+}
+
 void setup() {
+  // Serial.begin(9600);
+  // Serial.println("Started");
 
-  /*
- int timerid1 = timer.setTimeout(5*1000, []() {
-    if(waterPump.on(true)) {
-      int timerid2 = timer.setTimeout(5*1000, []() {
-        waterPump.off();
-      });
-    }
-  });
-  */
-
-  timer.setInterval(RATE_ENV_READ, []() {
+  envReadTimer = timer.setInterval(RATE_ENV_READ, []() {
     enviroment.readData();
+    // serializeJson(enviroment.toJSON(), Serial);
   });
+
+  startWaterPump();
 
   // if enviroment.isDaylight() ? setup waterPump : stop waterPump
 
   /*
-  timer.setInterval(RATE_POST_SERVER, []() {
+    timer.setInterval(RATE_POST_SERVER, []() {
     waterPump.getData();
     enviroment.getData();
-  });
+    });
   */
 }
 
 void loop() {
-  
+  timer.run();
+  waterPump.loop();
 }
