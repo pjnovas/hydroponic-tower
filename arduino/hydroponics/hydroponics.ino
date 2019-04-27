@@ -2,14 +2,17 @@
 
 #include "WaterPump.h"
 #include "Enviroment.h"
+#include "Water.h"
 #include "SimpleTimer.h"
 #include <ArduinoJson.h>
 
 WaterPump waterPump;
 Enviroment enviroment;
+Water water;
 SimpleTimer timer;
 
-unsigned int envReadTimer;
+unsigned int timer_EnvRead;
+unsigned int timer_WaterRead;
 
 void startWaterPump() {
   if(waterPump.on()) {
@@ -25,14 +28,21 @@ void startWaterPump() {
 }
 
 void setup() {
-  // Serial.begin(9600);
-  // Serial.println("Started");
+  Serial.begin(9600);
+  Serial.println("Started");
 
-  envReadTimer = timer.setInterval(RATE_ENV_READ, []() {
+  timer_EnvRead = timer.setInterval(RATE_ENV_READ, []() {
     enviroment.readData();
-    // serializeJson(enviroment.toJSON(), Serial);
+    serializeJson(enviroment.toJSON(), Serial);
+    Serial.println("");
   });
 
+  timer_WaterRead = timer.setInterval(RATE_WATER_READ, []() {
+    water.readData();
+    serializeJson(water.toJSON(), Serial);
+    Serial.println("");
+  });
+  
   startWaterPump();
 
   // if enviroment.isDaylight() ? setup waterPump : stop waterPump
