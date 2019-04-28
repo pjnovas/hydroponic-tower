@@ -13,6 +13,21 @@ SimpleTimer timer;
 
 unsigned int timer_EnvRead;
 unsigned int timer_WaterRead;
+unsigned int timer_WaterPumpRead;
+
+//////////
+
+// Interrupt function
+void flow () {
+  waterPump.flowFrequency();
+}
+
+void setupFlowSensor() {
+  pinMode(PIN_FLOW_SENSOR, INPUT);
+  digitalWrite(PIN_FLOW_SENSOR, HIGH);
+  attachInterrupt(PIN_FLOW_INTERRUPT, flow, FALLING);
+  sei(); // Enable interrupts
+}
 
 void startWaterPump() {
   if(waterPump.on()) {
@@ -37,12 +52,20 @@ void setup() {
     Serial.println("");
   });
 
+/*
   timer_WaterRead = timer.setInterval(RATE_WATER_READ, []() {
     water.readData();
     serializeJson(water.toJSON(), Serial);
     Serial.println("");
   });
-  
+*/
+
+  timer_WaterPumpRead = timer.setInterval(RATE_WATER_PUMP_READ, []() {
+    serializeJson(waterPump.toJSON(), Serial);
+    Serial.println("");
+  });
+
+  setupFlowSensor();
   startWaterPump();
 
   // if enviroment.isDaylight() ? setup waterPump : stop waterPump
@@ -53,7 +76,9 @@ void setup() {
     enviroment.getData();
     });
   */
+
 }
+
 
 void loop() {
   timer.run();

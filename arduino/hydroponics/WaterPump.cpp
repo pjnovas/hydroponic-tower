@@ -1,16 +1,19 @@
 #include "config.h"
 #include "Arduino.h"
 #include "WaterPump.h"
+#include <ArduinoJson.h>
+
 
 WaterPump::WaterPump() { 
   relayPin = PIN_RELAY_PUMP;
   floatSwitchPin = PIN_FLOAT_SWITCH;
-  flowSensorPin = PIN_FLOW_SENSOR;
 
   pinMode(relayPin, OUTPUT);
   pinMode(floatSwitchPin, INPUT);
-  pinMode(flowSensorPin, INPUT);
 
+  flow_frequency = 0;
+  cloopTime = millis();
+  
   off();
 }
 
@@ -41,17 +44,37 @@ bool WaterPump::hasError() {
     || data.pumpState == WaterPumpState::PUMP_ERR_LEVEL;
 }
 
-void WaterPump::readData() {
-  if (checkWaterLevel()) {
-    if (flowSensorPin && isOn()) {
-      data.waterFlow = pulseIn(flowSensorPin, HIGH);
-      // check if flow is not running > off(WaterPumpState::PUMP_ERR_FLOW);
-    }
-  }
+DynamicJsonDocument WaterPump::toJSON() {
+  // More info at https://arduinojson.org/v6/assistant/
+
+  const size_t capacity = JSON_OBJECT_SIZE(2);
+  DynamicJsonDocument doc(capacity);
+
+  doc["pumpState"] = (int)data.pumpState;
+  doc["waterFlow"] = data.waterFlow;
+
+  return doc;
+}
+
+void WaterPump::flowFrequency() {
+  flow_frequency++;
 }
 
 void WaterPump::loop() {
+  float currentTime = millis();
+  
+  // Every second, calculate flow
+  if((currentTime - cloopTime) > 1000)
+  {
+    float flowRate = ((1000.0 / (currentTime - cloopTime)) * flow_frequency) / WATER_FLOW_PULSE_HZ;
+    data.waterFlow = (flowRate / 60) * 1000;
+    
+    flow_frequency = 0; // Reset Counter
+    cloopTime = currentTime;
+  }
+  
   if(isOn()){
+    // TODO: check data.waterFlow === 0 and stop if is flow check is enabled
     checkWaterLevel();
   }
 }

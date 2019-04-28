@@ -6,6 +6,7 @@
 #define WaterPump_h
 
 #include "Arduino.h"
+#include <ArduinoJson.h>
 
 enum WaterPumpState {
   PUMP_IDLE       = 0,
@@ -16,7 +17,7 @@ enum WaterPumpState {
 
 struct WaterPumpData {
   WaterPumpState pumpState;
-  unsigned long waterFlow;
+  long waterFlow; // litres/hour
 };
 
 class WaterPump
@@ -29,14 +30,17 @@ class WaterPump
     bool isOn();
     bool hasError();
     WaterPumpData getData();
-    void readData();
+    DynamicJsonDocument toJSON();
     void loop();
+    void flowFrequency();
 
   private:
     int relayPin;
     int floatSwitchPin;
-    int flowSensorPin;
     WaterPumpData data;
+
+    volatile int flow_frequency;
+    unsigned long cloopTime;
 };
 
 #endif
