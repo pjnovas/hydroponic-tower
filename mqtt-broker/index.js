@@ -1,4 +1,5 @@
 var mosca = require('mosca');
+var http = require('http');
 
 const { StringDecoder } = require('string_decoder');
 const decoder = new StringDecoder('utf8');
@@ -13,18 +14,22 @@ var settings = {
   }
 };
 
-var server = new mosca.Server(settings);
+var mqttServ = new mosca.Server(settings);
+var httpServ = http.createServer();
 
-server.on('clientConnected', function(client) {
+mqttServ.on('clientConnected', function(client) {
   console.log('client connected', client.id);
 });
 
-server.on('published', function(packet, client) {
+mqttServ.on('published', function(packet, client) {
   console.log(decoder.end(packet.payload));
 });
 
-server.on('ready', setup);
+mqttServ.on('ready', setup);
 
 function setup() {
   console.log('Mosca server is up and running');
 }
+
+mqttServ.attachHttpServer(httpServ);
+httpServ.listen(3001);
