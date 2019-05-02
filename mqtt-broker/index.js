@@ -22,7 +22,7 @@ mqttServ.on('clientConnected', function(client) {
 });
 
 mqttServ.on('published', function(packet, client) {
-  console.log(decoder.end(packet.payload));
+  console.log(`${packet.topic} ${decoder.end(packet.payload)}`);
 });
 
 mqttServ.on('ready', setup);

@@ -5,6 +5,7 @@
 1. Download and install [Arduino IDE](https://www.arduino.cc/en/Main/Software) 1.6.8+
 2. Add support to ESP8266 > follow [this guide](https://learn.sparkfun.com/tutorials/esp8266-thing-hookup-guide/installing-the-esp8266-arduino-addon)
 3. Add Library [PubSubClient](https://github.com/knolleary/pubsubclient)
+4. Add library [SerialCommands](https://github.com/ppedro74/Arduino-SerialCommands)
 
 ## Setting up PubSub.ino
 The idea behind it is to upload a code into ESP-01 that will serve as a PubSub server & client. Then the Arduino from the Hydroponics will be communicating with the ESP-01 through Serial.

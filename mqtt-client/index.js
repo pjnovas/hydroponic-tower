@@ -4,10 +4,11 @@ var client  = mqtt.connect('mqtt://localhost')
 client.on('connect', function () {
   console.log('connected!');
 
-  client.subscribe('outTopic', function (err) {
-    if (!err) {
-      client.publish('inTopic', 'Hello mqtt from nodejs client')
-    }
+  client.subscribe('tower-1/#', function (err) {
+    
+    // if (!err) {
+    //   client.publish('inTopic', 'Hello mqtt from nodejs client')
+    // }
   })
 })
 
