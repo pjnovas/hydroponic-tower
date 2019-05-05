@@ -1,7 +1,6 @@
 #include "config.h"
 #include "Arduino.h"
 #include "Water.h"
-#include <ArduinoJson.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -30,19 +29,6 @@ Water::Water():oneWire(PIN_WATER_TEMP_DATA), sensors(&oneWire) {
 
 WaterData Water::getData() {
   return data;
-}
-
-DynamicJsonDocument Water::toJSON() {
-  // More info at https://arduinojson.org/v6/assistant/
-
-  const size_t capacity = JSON_OBJECT_SIZE(3);
-  DynamicJsonDocument doc(capacity);
-  
-  doc["temperature"] = data.temperature;
-  doc["ec"] = data.ec;
-  doc["tds"] = data.tds;
-
-  return doc;
 }
 
 void Water::readData() {

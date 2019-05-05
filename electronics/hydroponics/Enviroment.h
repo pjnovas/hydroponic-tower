@@ -6,7 +6,6 @@
 #define Enviroment_h
 
 #include "Arduino.h"
-#include <ArduinoJson.h>
 
 struct EnviromentData {
   float temperature;
@@ -21,7 +20,6 @@ class Enviroment
     void readData();
     bool isDaylight();
     EnviromentData getData();
-    DynamicJsonDocument toJSON();
 
   private:
     unsigned int tempPin;

@@ -1,21 +1,24 @@
 /*
  * Configuration File
+ * Duplicate this file into config.h and set up your settings
  */
 
 // SOFT SETTINGS /////////////////////////////////////
 
-// #define HOSTNAME "Hydroponics"
+#define DEBUG // Comment definition to disable USB Serial debug mode
 
-#define WIFI_SSID "******"
-#define WIFI_PASSWORD "******"
+#define SERIAL_BAULRATE               9600 // communication with ESP-01
+#define SERIAL_DEBUG_BAULRATE         9600 // for USB debug
 
-#define SERIAL_BAULRATE 115200 // communication with ESP-01
+#define WIFI_SSID                     "********"
+#define WIFI_PASSWORD                 "********"
 
-// IoT MQTT Settings
-// hostname, token, etc
+#define MQTT_HOST                     "your-broker.com"
+#define MQTT_PORT                     1883
+#define MQTT_TOWER_ID                 "tower-1" // base path of the topic, ie. home/living/tower-1 (avoid / as first char)
 
 // Rates (milliseconds)
-#define RATE_ENV_READ                 5000 // enviroment sensor refresh rates
+#define RATE_ENV_READ                 5000 // environment sensor refresh rates
 #define RATE_WATER_READ               5000 // EC and water temp refresh rates
 #define RATE_WATER_PUMP_READ          1000 // Water Flow Meter refresh rates
 #define RATE_WATER_PUMP_START         3000 // time the pump gets started
@@ -39,6 +42,9 @@
 
 /////////////////////////////////////
 // Digital Pins /////////////////////
+
+#define PIN_DEBUG_SERIAL_RX   9  // For USB debug software serial
+#define PIN_DEBUG_SERIAL_TX   11 // For USB debug software serial
 
 #define PIN_RELAY_PUMP        4  // Any relay module for the Water Pump
 #define PIN_FLOAT_SWITCH      3  // Any buoy float switch

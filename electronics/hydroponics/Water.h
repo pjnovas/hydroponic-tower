@@ -22,7 +22,6 @@ class Water
     Water();
     void readData();
     WaterData getData();
-    DynamicJsonDocument toJSON();
 
   private:
     unsigned int ECPin;

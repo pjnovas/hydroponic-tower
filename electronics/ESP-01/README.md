@@ -52,3 +52,9 @@ should respond with `OK`.
 
 * Download a firmware from [espressif](https://www.espressif.com/en/products/hardware/esp8266ex/resources)
 * Flash it by downloading the esptool "Flash Download Tools (ESP8266 & ESP32)" from same place
+
+-----------
+
+## Resources
+
+* [ESP docs](https://arduino-esp8266.readthedocs.io/en/latest/)

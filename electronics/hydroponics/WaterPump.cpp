@@ -1,8 +1,6 @@
 #include "config.h"
 #include "Arduino.h"
 #include "WaterPump.h"
-#include <ArduinoJson.h>
-
 
 WaterPump::WaterPump() { 
   relayPin = PIN_RELAY_PUMP;
@@ -44,18 +42,6 @@ bool WaterPump::hasError() {
     || data.pumpState == WaterPumpState::PUMP_ERR_LEVEL;
 }
 
-DynamicJsonDocument WaterPump::toJSON() {
-  // More info at https://arduinojson.org/v6/assistant/
-
-  const size_t capacity = JSON_OBJECT_SIZE(2);
-  DynamicJsonDocument doc(capacity);
-
-  doc["pumpState"] = (int)data.pumpState;
-  doc["waterFlow"] = data.waterFlow;
-
-  return doc;
-}
-
 void WaterPump::flowFrequency() {
   flow_frequency++;
 }
@@ -81,7 +67,7 @@ void WaterPump::loop() {
 
 bool WaterPump::on(bool ignoreFlowSensor) {
   if (ignoreFlowSensor || checkWaterLevel()) {
-    digitalWrite(relayPin, LOW);
+    digitalWrite(relayPin, HIGH);
     data.pumpState = WaterPumpState::PUMP_ON;
     return true;
   }
@@ -90,5 +76,5 @@ bool WaterPump::on(bool ignoreFlowSensor) {
 
 void WaterPump::off(enum WaterPumpState newState) {
   data.pumpState = newState;
-  digitalWrite(relayPin, HIGH);
+  digitalWrite(relayPin, LOW);
 }

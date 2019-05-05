@@ -2,6 +2,10 @@
 #include <PubSubClient.h>
 #include <SerialCommands.h>
 
+#define SERIAL_BAULRATE 9600
+#define HOSTNAME "ESP-Tower-1"
+#define RETRY_MQTT_CONNECT 5000
+
 char* ssid;
 char* password;
 
@@ -22,6 +26,12 @@ void cmd_unrecognized(SerialCommands* sender, const char* cmd)
 {
   sender->GetSerial()->print("ERROR;unknown command;");
   sender->GetSerial()->println(cmd);
+}
+
+// Restart Module
+void cmd_reset(SerialCommands* sender)
+{
+  ESP.restart();
 }
 
 // publish message
@@ -46,7 +56,9 @@ void cmd_publish(SerialCommands* sender)
     return;
   }
 
-  client.publish(topic, value, true);
+  String topic_srt = String(clientId) + "/" + String(topic);
+  const char* topic_ = topic_srt.c_str();
+  client.publish(topic_, value, true);
 }
 
 // set configs
@@ -77,6 +89,7 @@ void cmd_set(SerialCommands* sender)
 }
 
 // SERIAL COMMANDS
+SerialCommand cmd_reset_("RST", cmd_reset);
 SerialCommand cmd_publish_("PUB", cmd_publish);
 SerialCommand cmd_set_("SET", cmd_set);
 
@@ -116,7 +129,7 @@ void connectWIFI() {
 }
 
 void connectMQTT() {
-  if (millis() > lastTry + 5000) {
+  if (millis() > lastTry + RETRY_MQTT_CONNECT) {
     if (isWifiReady() && mqtt_server) {
       if (isMQTTReady()) Serial.println("MQTT;ON");
       else {
@@ -138,13 +151,16 @@ void connectMQTT() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.hostname(HOSTNAME);
+  Serial.begin(SERIAL_BAULRATE);
 
   commands.SetDefaultHandler(cmd_unrecognized);
+  commands.AddCommand(&cmd_reset_);
   commands.AddCommand(&cmd_publish_);
   commands.AddCommand(&cmd_set_);
-  
-  Serial.println("WAITING");
+
+  Serial.println("READY"); // Used to know when the Module is ready
 }
 
 void loop() {
