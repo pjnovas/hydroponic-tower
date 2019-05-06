@@ -3,6 +3,7 @@
 #include "WaterPump.h"
 #include "Enviroment.h"
 #include "Water.h"
+#include "LEDState.h"
 #include "SimpleTimer.h"
 #include <SerialCommands.h>
 #include <SoftwareSerial.h>
@@ -11,6 +12,7 @@ WaterPump waterPump;
 Enviroment enviroment;
 Water water;
 SimpleTimer timer;
+LEDState deviceState;
 
 SoftwareSerial espSerial(PIN_DEBUG_SERIAL_RX, PIN_DEBUG_SERIAL_TX);
 
@@ -31,6 +33,7 @@ unsigned int timer_WaterPumpRead;
 //////////
 
 void connectWifi() {
+  deviceState.setState(DeviceState::DEVICE_WIFI_TRY);
 #ifdef DEBUG
   debugSerial.println("SET;WIFI");
 #endif
@@ -42,6 +45,7 @@ void connectWifi() {
 }
 
 void connectMQTT() {
+  deviceState.setState(DeviceState::DEVICE_MQTT_TRY);
 #ifdef DEBUG
   debugSerial.println("SET;MQTT");
 #endif
@@ -56,6 +60,7 @@ void connectMQTT() {
 
 // default handler
 void cmd_unrecognized(SerialCommands* sender, const char* cmd) {
+  deviceState.setState(DeviceState::DEVICE_ERROR_UNKONWN_CMD);
 #ifdef DEBUG
   debugSerial.println(cmd);
 #endif
@@ -70,6 +75,8 @@ void cmd_wifi(SerialCommands* sender) {
 #endif
   
   if (strcmp(state, "ON") == 0) {
+    deviceState.setState(DeviceState::DEVICE_WIFI_ON);
+
     connectMQTT();
     return;
   }
@@ -77,12 +84,12 @@ void cmd_wifi(SerialCommands* sender) {
   espReady = false;
   
   if (strcmp(state, "TRY") == 0) {
-    // Log into LED
+    deviceState.setState(DeviceState::DEVICE_WIFI_TRY);
   }
 
   if (strcmp(state, "OFF") == 0) {
-    // Retry WIFI in 5 seconds
-    // connectWifi();
+    deviceState.setState(DeviceState::DEVICE_WIFI_OFF);
+    timer.setTimeout(5000, connectWifi); // Retry WIFI in 5 seconds
   }
 }
 
@@ -95,8 +102,7 @@ void cmd_mqtt(SerialCommands* sender) {
 #endif
   
   if (strcmp(state, "ON") == 0) {
-    // Log into LED
-
+    deviceState.setState(DeviceState::DEVICE_MQTT_ON);
     espReady = true;
     return;
   }
@@ -104,22 +110,37 @@ void cmd_mqtt(SerialCommands* sender) {
   espReady = false;
 
   if (strcmp(state, "TRY") == 0) {
-    // Log into LED
+    deviceState.setState(DeviceState::DEVICE_MQTT_TRY);
+
+    char* reason = sender->Next();
+
+    // There is an error with the lib. Wifi must be restored
+    // https://github.com/knolleary/pubsubclient/issues/552
+    if (strcmp(reason, "-2") == 0) {
+      connectWifi();
+    }
   }
 
   if (strcmp(state, "OFF") == 0) {
-    // LOG into LED
+    deviceState.setState(DeviceState::DEVICE_MQTT_OFF);
+    // ESP will retry by itself
   }
 }
 
 void cmd_error(SerialCommands* sender) {
   char* error = sender->Next();
+  deviceState.setState(DeviceState::DEVICE_ERROR);
   // Publish into topic /errors (does it make sense?)
+}
+
+void cmd_pub_ack(SerialCommands* sender) {
+  deviceState.setState(DeviceState::DEVICE_PUBLISH_ACK);
 }
 
 // SERIAL COMMANDS
 SerialCommand cmd_wifi_("WIFI", cmd_wifi);
 SerialCommand cmd_mqtt_("MQTT", cmd_mqtt);
+SerialCommand cmd_pub_ack_("PUBOK", cmd_pub_ack);
 SerialCommand cmd_error_("ERROR", cmd_error);
 
 // Interrupt function
@@ -137,6 +158,7 @@ void setupFlowSensor() {
 void publishWaterPumpState() {
   if (espReady) {
     WaterPumpData wpData = waterPump.getData();
+    deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;water/pump/state;");
     espSerial.println(wpData.pumpState);
   }
@@ -149,8 +171,12 @@ void startWaterPump() {
       publishWaterPumpState();
       timer.setTimeout(RATE_WATER_PUMP_START, startWaterPump);
     });
+    
+    deviceState.setState(DeviceState::WATER_PUMP_ALARM_OFF);
   }
   else {
+    deviceState.setState(DeviceState::WATER_PUMP_ALARM_ON);
+    
     // Could not start, RETRY later
     timer.setTimeout(RATE_WATER_PUMP_START_RETRY, startWaterPump);
   }
@@ -159,10 +185,14 @@ void startWaterPump() {
 }
 
 void setUpReadTimers() {
+  // TODO: Remove SimpleTimer and move all this into the loop
+  
   timer_EnvRead = timer.setInterval(RATE_ENV_READ, []() {
     enviroment.readData();
 
     if (espReady) {
+      deviceState.setState(DeviceState::DEVICE_PUBLISH);
+      
       EnviromentData eData = enviroment.getData();
       espSerial.print("PUB;env/temp;");
       espSerial.println(eData.temperature);
@@ -177,6 +207,8 @@ void setUpReadTimers() {
     water.readData();
 
     if (espReady) {
+      deviceState.setState(DeviceState::DEVICE_PUBLISH);
+      
       WaterData wData = water.getData();
       espSerial.print("PUB;water/temp;");
       espSerial.println(wData.temperature);
@@ -190,8 +222,10 @@ void setUpReadTimers() {
   timer_WaterPumpRead = timer.setInterval(RATE_WATER_PUMP_READ, []() {
     if (espReady) {
       WaterPumpData wpData = waterPump.getData();
-
+        
       if (wpData.pumpState == WaterPumpState::PUMP_ON) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        
         espSerial.print("PUB;water/pump/flow;");
         espSerial.println(wpData.waterFlow);
       }
@@ -215,17 +249,19 @@ void setup() {
   
   commands.AddCommand(&cmd_wifi_);
   commands.AddCommand(&cmd_mqtt_);
+  commands.AddCommand(&cmd_pub_ack_);
   commands.AddCommand(&cmd_error_);
 
   espSerial.begin(SERIAL_BAULRATE);
   espSerial.println("RST");
   espSerial.flush();
 
+  deviceState.setState(DeviceState::DEVICE_STARTUP);
+  deviceState.loop();
+  
   delay(1000);
-  // Log into LED
   
   if(!espSerial.find("READY")) {
-    // Log into LED
 #ifdef DEBUG
     debugSerial.println("Module has no response");
 #endif
@@ -233,6 +269,9 @@ void setup() {
     while(1); // TODO: this is a never start loop
   }
 
+  deviceState.setState(DeviceState::DEVICE_SERIAL_READY);
+  deviceState.loop();
+  
   setUpReadTimers();
 
   delay(1000);
@@ -244,14 +283,5 @@ void loop() {
   commands.ReadSerial();
   timer.run();
   waterPump.loop();
-  
-  /*
-  if (espSerial.available()) {
-    debugSerial.write(espSerial.read());
-  }
-  /*
-  if (debugSerial.available()) {
-    espSerial.write(debugSerial.read());
-  }
-  */
+  deviceState.loop();
 }

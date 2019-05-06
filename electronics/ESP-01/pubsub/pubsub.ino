@@ -58,7 +58,12 @@ void cmd_publish(SerialCommands* sender)
 
   String topic_srt = String(clientId) + "/" + String(topic);
   const char* topic_ = topic_srt.c_str();
-  client.publish(topic_, value, true);
+  
+  if(client.publish(topic_, value, true)) {
+    sender->GetSerial()->println("PUBOK");
+  } else {
+    sender->GetSerial()->println("ERROR:PUB;FAILED");
+  }
 }
 
 // set configs
@@ -130,11 +135,15 @@ void connectWIFI() {
 
 void connectMQTT() {
   if (millis() > lastTry + RETRY_MQTT_CONNECT) {
+    lastTry = millis();
+    
     if (isWifiReady() && mqtt_server) {
+      
       if (isMQTTReady()) Serial.println("MQTT;ON");
       else {
         String willTopic = String(clientId) + "/status";
         const char* willTopic_ = willTopic.c_str();
+        
         if (client.connect(clientId, NULL, NULL, willTopic_, 0, 1, "OFFLINE", true)) {
           Serial.println("MQTT;ON");
           client.publish(willTopic_, "ONLINE", true);
@@ -145,8 +154,6 @@ void connectMQTT() {
         }
       }
     }
-    
-    lastTry = millis();
   }
 }
 
