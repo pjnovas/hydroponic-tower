@@ -185,38 +185,66 @@ void startWaterPump() {
 }
 
 void setUpReadTimers() {
-  // TODO: Remove SimpleTimer and move all this into the loop
-  
   timer_EnvRead = timer.setInterval(RATE_ENV_READ, []() {
     enviroment.readData();
 
-    if (espReady) {
-      deviceState.setState(DeviceState::DEVICE_PUBLISH);
-      
-      EnviromentData eData = enviroment.getData();
-      espSerial.print("PUB;env/temp;");
-      espSerial.println(eData.temperature);
-      espSerial.print("PUB;env/hum;");
-      espSerial.println(eData.humidity);
-      espSerial.print("PUB;env/light;");
-      espSerial.println(eData.light);
-    }
+    timer.setTimeout(1000, []() {
+      if (espReady) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        EnviromentData eData = enviroment.getData();
+        espSerial.print("PUB;env/temp;");
+        espSerial.println(eData.temperature);
+      }
+    });
+  
+    timer.setTimeout(2000, []() {
+      if (espReady) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        EnviromentData eData = enviroment.getData();
+        espSerial.print("PUB;env/hum;");
+        espSerial.println(eData.humidity);
+      }
+    });
+  
+    timer.setTimeout(3000, []() {
+      if (espReady) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        EnviromentData eData = enviroment.getData();
+        espSerial.print("PUB;env/light;");
+        espSerial.println(eData.light);
+      }
+    });
   });
 
   timer_WaterRead = timer.setInterval(RATE_WATER_READ, []() {
     water.readData();
 
-    if (espReady) {
-      deviceState.setState(DeviceState::DEVICE_PUBLISH);
-      
-      WaterData wData = water.getData();
-      espSerial.print("PUB;water/temp;");
-      espSerial.println(wData.temperature);
-      espSerial.print("PUB;water/ec;");
-      espSerial.println(wData.ec);
-      espSerial.print("PUB;water/tds;");
+    timer.setTimeout(1000, []() {
+      if (espReady) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        WaterData wData = water.getData();
+        espSerial.print("PUB;water/temp;");
+        espSerial.println(wData.temperature);
+      }
+    });
+    
+    timer.setTimeout(2000, []() {
+      if (espReady) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        WaterData wData = water.getData();
+        espSerial.print("PUB;water/ec;");
+        espSerial.println(wData.ec);
+      }
+    });
+
+    timer.setTimeout(3000, []() {
+      if (espReady) {
+        deviceState.setState(DeviceState::DEVICE_PUBLISH);
+        WaterData wData = water.getData();
+        espSerial.print("PUB;water/tds;");
       espSerial.println(wData.tds);
-    }
+      }
+    });
   });
 
   timer_WaterPumpRead = timer.setInterval(RATE_WATER_PUMP_READ, []() {
