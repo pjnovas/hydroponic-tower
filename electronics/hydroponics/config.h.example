@@ -5,7 +5,7 @@
 
 // SOFT SETTINGS /////////////////////////////////////
 
-#define DEBUG // Comment definition to disable USB Serial debug mode
+// #define DEBUG // Comment this line to disable USB Serial debug mode
 
 #define SERIAL_BAULRATE               9600 // communication with ESP-01
 #define SERIAL_DEBUG_BAULRATE         9600 // for USB debug
@@ -13,17 +13,17 @@
 #define WIFI_SSID                     "********"
 #define WIFI_PASSWORD                 "********"
 
-#define MQTT_HOST                     "your-broker.com"
+#define MQTT_HOST                     "192.168.0.249"
 #define MQTT_PORT                     1883
 #define MQTT_TOWER_ID                 "tower-1" // base path of the topic, ie. home/living/tower-1 (avoid / as first char)
 
 // Rates (milliseconds)
-#define RATE_ENV_READ                 5000 // environment sensor refresh rates
-#define RATE_WATER_READ               5000 // EC and water temp refresh rates
-#define RATE_WATER_PUMP_READ          1000 // Water Flow Meter refresh rates
-#define RATE_WATER_PUMP_START         3000 // time the pump gets started
-#define RATE_WATER_PUMP_START_RETRY   1000 // retry start time
-#define RATE_WATER_PUMP_FLOW          6000 // time the pump is on
+#define RATE_ENV_READ                 15*1000     // enviroment sensor refresh rates
+#define RATE_WATER_READ               30*1000   // EC and water temp refresh rates
+#define RATE_WATER_PUMP_READ          5*1000      // Water Flow Meter refresh rates
+#define RATE_WATER_PUMP_START         15*60*1000  // time the pump gets started
+#define RATE_WATER_PUMP_START_RETRY   1*60*1000   // retry start time
+#define RATE_WATER_PUMP_FLOW          15*60*1000  // time the pump is on
 
 // WaterFlow Pulse frequency (Hz): is flow rate in L/min.
 #define WATER_FLOW_PULSE_HZ   1
@@ -40,8 +40,13 @@
 
 // HARD SETTINGS /////////////////////////////////////
 
+#define VOLAGE_PSU            5.3  // Set the real voltage applied to sensors (used to do calculations)
+
 /////////////////////////////////////
 // Digital Pins /////////////////////
+
+#define PIN_LED_FAULT         6  // LED for fault state: the device is not connected or stoped (i.e. RED color)
+#define PIN_LED_STATE         5  // LED for normal state: connecting, working normally, etc (i.e. GREEN or BLUE color)
 
 #define PIN_DEBUG_SERIAL_RX   9  // For USB debug software serial
 #define PIN_DEBUG_SERIAL_TX   11 // For USB debug software serial

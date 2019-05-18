@@ -266,7 +266,7 @@ void setUpReadTimers() {
 
 void setup() {
 #ifdef DEBUG
-  debugSerial.begin(9600);
+  debugSerial.begin(SERIAL_DEBUG_BAULRATE);
   while (!debugSerial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }

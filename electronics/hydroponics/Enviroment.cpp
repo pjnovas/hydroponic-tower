@@ -20,10 +20,11 @@ EnviromentData Enviroment::getData() {
 void Enviroment::readData() {
   if(tempPin) {
     data.temperature = amt1001_gettemperature(analogRead(tempPin));
+    data.temperature -= (data.temperature * 5) / 25; // this is a patch fix for the voltage reference (5v == 25°c)
   }
   
   if(humPin) {
-    double volt = (double) analogRead(humPin) * (5.0 / 1023.0);
+    double volt = (double) analogRead(humPin) * (VOLAGE_PSU / 1023.0);
     data.humidity = amt1001_gethumidity(volt);
   }
 

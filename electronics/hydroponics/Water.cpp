@@ -21,7 +21,7 @@ Water::Water():oneWire(PIN_WATER_TEMP_DATA), sensors(&oneWire) {
   TemperatureCoef = EC_PPM_TempCoef;
   K = EC_PPM_K;
   
-  Vin = 5;
+  Vin = VOLAGE_PSU;
   R1 = (R1 + Ra);
 
   sensors.begin();
