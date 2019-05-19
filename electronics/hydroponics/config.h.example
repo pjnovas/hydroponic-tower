@@ -65,8 +65,11 @@
 #define PIN_WATER_EC          A0 // EC Pin INPUT from 110v
 #define PIN_WATER_EC_POWER    A1 // EC Pin Power from 110v
 
-#define PIN_PHOTO_CELL        A5 
+#define PIN_PHOTO_CELL        A3 
 
 // AMT1001 module
 #define PIN_ENV_HUM           A6 // YELLOW
 #define PIN_ENV_TEMP          A7 // WHITE > 10k resistor to GND
+
+// RTC Clock is managed under SLA & SLC pins on the board
+// Which on an Arduino Nano are A4 & A5
