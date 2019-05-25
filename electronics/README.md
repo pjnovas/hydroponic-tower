@@ -5,9 +5,20 @@
 ## Schematics
 ![hydroponics_schem](hydroponics_schem.png)
 
-## Bill of Materials
+## Bill of Materials (BOM)
+[BOM](./hydroponics_bom.html)
 
-[TODO]
+---
+
+## Arduino Libraries
+
+The following libraries are needed from arduino (there are others embedded)
+
+* ESP8266 > follow [this guide](https://learn.sparkfun.com/tutorials/esp8266-thing-hookup-guide/installing-the-esp8266-arduino-addon)
+* [PubSubClient](https://github.com/knolleary/pubsubclient)
+* [SerialCommands](https://github.com/ppedro74/Arduino-SerialCommands)
+* [Sodaq_DS3231](https://github.com/SodaqMoja/Sodaq_DS3231)
+* [CronAlarms](https://github.com/Martin-Laclaustra/CronAlarms)
 
 ---
 
