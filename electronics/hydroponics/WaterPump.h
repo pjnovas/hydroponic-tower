@@ -16,7 +16,7 @@ enum WaterPumpState {
 
 struct WaterPumpData {
   WaterPumpState pumpState;
-  long waterFlow; // litres/hour
+  unsigned short waterFlow; // litres/hour
 };
 
 class WaterPump
@@ -33,10 +33,7 @@ class WaterPump
     void flowFrequency();
 
   private:
-    int relayPin;
-    int floatSwitchPin;
     WaterPumpData data;
-
     volatile int flow_frequency;
     unsigned long cloopTime;
 };

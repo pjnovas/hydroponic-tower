@@ -50,20 +50,18 @@ class LEDState
     void loop();
 
   private:
-    unsigned int faultPin;
-    unsigned int statePin;
     DeviceState state;
     
-    unsigned int faultValue = 0;
-    unsigned int faultInterval = 0;
+    byte faultValue = 0;
+    unsigned short faultInterval = 0;
     unsigned long faultLastTime = 0;
     
-    unsigned int stateValue = 0;
-    unsigned int stateInterval = 0;
+    byte stateValue = 0;
+    unsigned short stateInterval = 0;
     unsigned long stateLastTime = 0;
     
-    const int slowBlink = 500;
-    const int fastBlink = 200;
+    const short slowBlink = 500;
+    const short fastBlink = 200;
 };
 
 #endif

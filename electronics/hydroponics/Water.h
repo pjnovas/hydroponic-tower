@@ -23,18 +23,7 @@ class Water
     void readData();
     WaterData getData();
 
-  private:
-    unsigned int ECPin;
-    unsigned int ECPowerPin;
-    unsigned int tempPin;
-    
-    float Vin;
-    unsigned int R1;
-    unsigned int Ra;
-    float PPMconversion;
-    float TemperatureCoef;
-    float K;
-    
+  private:    
     WaterData data;
     OneWire oneWire;
     DallasTemperature sensors;

@@ -18,7 +18,7 @@ unsigned long lastTry;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-char commands_buffer[128];
+char commands_buffer[64];
 SerialCommands commands(&Serial, commands_buffer, sizeof(commands_buffer), "\r\n", ";");
 
 // default handler

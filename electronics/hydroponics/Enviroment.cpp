@@ -4,13 +4,9 @@
 #include "amt1001_ino.h"
 
 Enviroment::Enviroment() {  
-  tempPin = PIN_ENV_TEMP;
-  humPin = PIN_ENV_HUM;
-  photoPin = PIN_PHOTO_CELL;
-  
-  pinMode(tempPin, INPUT);
-  pinMode(humPin, INPUT);
-  pinMode(photoPin, INPUT);
+  pinMode(PIN_ENV_TEMP, INPUT);
+  pinMode(PIN_ENV_HUM, INPUT);
+  pinMode(PIN_PHOTO_CELL, INPUT);
 }
 
 EnviromentData Enviroment::getData() {
@@ -18,23 +14,17 @@ EnviromentData Enviroment::getData() {
 }
 
 void Enviroment::readData() {
-  if(tempPin) {
-    data.temperature = amt1001_gettemperature(analogRead(tempPin));
+  if(PIN_ENV_TEMP) {
+    data.temperature = amt1001_gettemperature(analogRead(PIN_ENV_TEMP));
     data.temperature -= (data.temperature * 5) / 25; // this is a patch fix for the voltage reference (5v == 25°c)
   }
   
-  if(humPin) {
-    double volt = (double) analogRead(humPin) * (VOLAGE_PSU / 1023.0);
-    data.humidity = amt1001_gethumidity(volt);
+  if(PIN_ENV_HUM) {
+    data.humidity = amt1001_gethumidity(analogRead(PIN_ENV_HUM) * (VOLAGE_PSU / 1023.0));
   }
 
-  if (photoPin) {
+  if (PIN_PHOTO_CELL) {
     // light - 0 = dark
-    data.light = map(analogRead(photoPin), 0, 1023, 0, 100);
+    data.light = map(analogRead(PIN_PHOTO_CELL), 0, 1023, 0, 100);
   }
-}
-
-bool Enviroment::isDaylight() {
-  // TODO: should use a clock?
-  return data.light < DARK_THRESHOLD ? true : false;
 }

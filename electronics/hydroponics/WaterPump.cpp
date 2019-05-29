@@ -3,11 +3,8 @@
 #include "WaterPump.h"
 
 WaterPump::WaterPump() { 
-  relayPin = PIN_RELAY_PUMP;
-  floatSwitchPin = PIN_FLOAT_SWITCH;
-
-  pinMode(relayPin, OUTPUT);
-  pinMode(floatSwitchPin, INPUT);
+  pinMode(PIN_RELAY_PUMP, OUTPUT);
+  pinMode(PIN_FLOAT_SWITCH, INPUT);
 
   flow_frequency = 0;
   cloopTime = millis();
@@ -20,11 +17,11 @@ WaterPumpData WaterPump::getData() {
 }
 
 bool WaterPump::checkWaterLevel() {
-  if (!floatSwitchPin) {
+  if (!PIN_FLOAT_SWITCH) {
     return true;
   }
 
-  if(digitalRead(floatSwitchPin) == LOW_WATER_LEVEL_STATE) {
+  if(digitalRead(PIN_FLOAT_SWITCH) == LOW_WATER_LEVEL_STATE) {
     off(WaterPumpState::PUMP_ERR_LEVEL);
     return false;
   }
@@ -47,7 +44,7 @@ void WaterPump::flowFrequency() {
 }
 
 void WaterPump::loop() {
-  float currentTime = millis();
+  unsigned long currentTime = millis();
   
   // Every second, calculate flow
   if((currentTime - cloopTime) > 1000)
@@ -67,7 +64,7 @@ void WaterPump::loop() {
 
 bool WaterPump::on(bool ignoreFlowSensor) {
   if (ignoreFlowSensor || checkWaterLevel()) {
-    digitalWrite(relayPin, HIGH);
+    digitalWrite(PIN_RELAY_PUMP, HIGH);
     data.pumpState = WaterPumpState::PUMP_ON;
     return true;
   }
@@ -76,5 +73,5 @@ bool WaterPump::on(bool ignoreFlowSensor) {
 
 void WaterPump::off(enum WaterPumpState newState) {
   data.pumpState = newState;
-  digitalWrite(relayPin, LOW);
+  digitalWrite(PIN_RELAY_PUMP, LOW);
 }

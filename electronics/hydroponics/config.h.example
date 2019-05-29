@@ -17,13 +17,17 @@
 #define MQTT_PORT                     1883
 #define MQTT_TOWER_ID                 "tower-1" // base path of the topic, ie. home/living/tower-1 (avoid / as first char)
 
-// Rates (milliseconds)
-#define RATE_ENV_READ                 15*1000     // enviroment sensor refresh rates
-#define RATE_WATER_READ               30*1000   // EC and water temp refresh rates
-#define RATE_WATER_PUMP_READ          5*1000      // Water Flow Meter refresh rates
-#define RATE_WATER_PUMP_START         15*60*1000  // time the pump gets started
-#define RATE_WATER_PUMP_START_RETRY   1*60*1000   // retry start time
-#define RATE_WATER_PUMP_FLOW          15*60*1000  // time the pump is on
+// Rates (CRON EXPRESSION)
+#define RATE_ENV_READ                 "*/15 * * * * *"    // enviroment sensor refresh rates
+#define RATE_WATER_READ               "*/30 * * * * *"    // EC and water temp refresh rates
+#define RATE_WATER_PUMP_READ          "*/5 * * * * *"     // Water Flow Meter refresh rates
+#define RATE_WATER_PUMP_START_RETRY   "*/10 * * * * *"    // retry start time
+#define RATE_WATER_PUMP_FLOW          "*/30 * * * * *"    // time the pump is on
+
+char* const RATE_WATER_PUMP_START[] = {           // times the pump gets started
+  "*/15 * * * * *",
+  "*/20 * * * * *"
+};
 
 // WaterFlow Pulse frequency (Hz): is flow rate in L/min.
 #define WATER_FLOW_PULSE_HZ   1

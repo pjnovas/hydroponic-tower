@@ -3,14 +3,11 @@
 #include "LEDState.h"
 
 LEDState::LEDState() {  
-  faultPin = PIN_LED_FAULT;
-  statePin = PIN_LED_STATE;
+  pinMode(PIN_LED_FAULT, OUTPUT);
+  pinMode(PIN_LED_STATE, OUTPUT);
 
-  pinMode(faultPin, OUTPUT);
-  pinMode(statePin, OUTPUT);
-
-  digitalWrite(faultPin, LOW);
-  digitalWrite(statePin, LOW);
+  digitalWrite(PIN_LED_FAULT, LOW);
+  digitalWrite(PIN_LED_STATE, LOW);
 
   state = DeviceState::DEVICE_IDLE;
 }
@@ -25,7 +22,7 @@ void LEDState::setState(DeviceState newState) {
   switch(state){
     case DeviceState::DEVICE_IDLE: 
       faultValue = LOW;
-      statePin = LOW;
+      stateValue = LOW;
       break;
     case DeviceState::DEVICE_STARTUP: 
       faultValue = HIGH;
@@ -91,7 +88,7 @@ void LEDState::loop() {
     else faultValue = HIGH;
   }
 
-  digitalWrite(faultPin, faultValue);
+  digitalWrite(PIN_LED_FAULT, faultValue);
 
   ////////////////
   
@@ -102,5 +99,5 @@ void LEDState::loop() {
     else stateValue = HIGH;
   }
 
-  digitalWrite(statePin, stateValue);
+  digitalWrite(PIN_LED_STATE, stateValue);
 }

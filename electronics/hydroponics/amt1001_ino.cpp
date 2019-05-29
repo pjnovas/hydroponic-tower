@@ -24,7 +24,6 @@ int16_t amt1001_gethumidity(double voltage) {
  * get temperature based on read voltage
  */
 float amt1001_gettemperature(uint16_t adcvalue) {
-	float t = 0.0;
 	float mint = 0;
 	float maxt = 0;
 
@@ -33,7 +32,7 @@ float amt1001_gettemperature(uint16_t adcvalue) {
 		return -1;
 	}
 
-	uint8_t i = 0;
+	size_t i = 0;
 	float a = amt1001_lookupadcfirst;
 	for(i=0; i<amt1001_lookuptablesize; i++) {
 		if(adcvalue < a)
@@ -49,8 +48,6 @@ float amt1001_gettemperature(uint16_t adcvalue) {
 
 	//do interpolation
 	a = a-amt1001_lookupadcstep;
-	t = mint + ((maxt-mint)/amt1001_lookupadcstep) * (adcvalue-a);
 
-	return t;
-
+	return mint + ((maxt-mint)/amt1001_lookupadcstep) * (adcvalue-a);
 }

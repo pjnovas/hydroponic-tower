@@ -9,8 +9,8 @@
 
 struct EnviromentData {
   float temperature;
-  unsigned int humidity;
-  unsigned int light;
+  byte humidity;
+  byte light;
 };
 
 class Enviroment
@@ -18,13 +18,9 @@ class Enviroment
   public:
     Enviroment();
     void readData();
-    bool isDaylight();
     EnviromentData getData();
 
   private:
-    unsigned int tempPin;
-    unsigned int humPin;
-    unsigned int photoPin;
     EnviromentData data;
 };
 
