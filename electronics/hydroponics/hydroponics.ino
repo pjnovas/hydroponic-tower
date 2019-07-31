@@ -1,4 +1,5 @@
 #include "config.h"
+#include "Cron.h"
 
 #include "WaterPump.h"
 #include "Enviroment.h"
@@ -7,17 +8,14 @@
 
 #include <SerialCommands.h>
 #include <SoftwareSerial.h>
-#include <Wire.h>
-#include <CronAlarms.h>
-#include <Sodaq_DS3231.h>
 
 WaterPump waterPump;
 Enviroment enviroment;
 Water water;
 LEDState deviceState;
+Cron cron;
 
 SoftwareSerial espSerial(PIN_DEBUG_SERIAL_RX, PIN_DEBUG_SERIAL_TX);
-
 // auto& espSerial = Serial; // TODO: hardware serial should be use when is no Debug mode
 
 #ifdef DEBUG
@@ -27,7 +25,9 @@ auto& debugSerial = Serial;
 char commands_buffer[64];
 SerialCommands commands(&espSerial, commands_buffer, sizeof(commands_buffer), "\r\n", ";");
 
+short delayPUB = 50;
 bool espReady = false;
+String retry_code = "";
 
 //////////
 
@@ -88,7 +88,7 @@ void cmd_wifi(SerialCommands* sender) {
 
   if (strcmp(state, "OFF") == 0) {
     deviceState.setState(DeviceState::DEVICE_WIFI_OFF);
-    Cron.create("*/5 * * * * *", connectWifi, true); // Retry WIFI in 5 seconds
+    retry_code = "WIFI";
   }
 }
 
@@ -174,15 +174,20 @@ void readEnviroment() {
     espSerial.print("PUB;env/temp;");
     espSerial.println(eData.temperature);
 
-    delay(100);
+    delay(delayPUB);
     deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;env/hum;");
     espSerial.println(eData.humidity);
   
-    delay(100);
+    delay(delayPUB);
     deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;env/light;");
     espSerial.println(eData.light);
+
+    delay(delayPUB);
+    deviceState.setState(DeviceState::DEVICE_PUBLISH);
+    espSerial.print("PUB;box/temp;");
+    espSerial.println(cron.getTemp());
   }
 }
 
@@ -195,12 +200,12 @@ void readWater() {
     espSerial.print("PUB;water/temp;");
     espSerial.println(wData.temperature);
 
-    delay(100);
+    delay(delayPUB);
     deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;water/ec;");
     espSerial.println(wData.ec);
 
-    delay(100);
+    delay(delayPUB);
     deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;water/tds;");
     espSerial.println(wData.tds);
@@ -219,45 +224,55 @@ void readPump() {
   }
 }
 
-void setUpReadTimers() {
-  Cron.create(RATE_ENV_READ, readEnviroment, false);
-  Cron.create(RATE_WATER_READ, readWater, false);
-  Cron.create(RATE_WATER_PUMP_READ, readPump, false);
-
-  setupFlowSensor();
-}
-
-void stopWaterPump() {
-  waterPump.off();
-  publishWaterPumpState();
-}
-
 void startWaterPump() {
   if(waterPump.on()) {
-    Cron.create(RATE_WATER_PUMP_FLOW, stopWaterPump, true);
     deviceState.setState(DeviceState::WATER_PUMP_ALARM_OFF);
   }
   else {
     deviceState.setState(DeviceState::WATER_PUMP_ALARM_ON);
-    Cron.create(RATE_WATER_PUMP_START_RETRY, startWaterPump, true);
+    retry_code = "PUMP_ON";
   }
 
   publishWaterPumpState();
 }
 
-void setupTimers() {
-  for (size_t i = 0; i < sizeof(RATE_WATER_PUMP_START); i++) {
-    Cron.create((char*)RATE_WATER_PUMP_START[i], startWaterPump, false);
+void stopWaterPump() {
+  waterPump.off();
+  deviceState.setState(DeviceState::WATER_PUMP_ALARM_OFF);
+  publishWaterPumpState(); 
+}
+
+void onAlarm(const String code) {
+  
+#ifdef DEBUG
+  Serial.println(code);
+#endif
+
+  if(code == "ENV_RD") readEnviroment();
+  if(code == "WATR_RD") readWater();
+  if(code == "WART_FW") readPump();
+  if(code == "PUMP_ON") startWaterPump();
+  if(code == "PUMP_OFF") stopWaterPump();
+  if(code == "WIFI") connectWifi();
+
+  if(code == "RETRY") {
+    if (retry_code.length() > 0) {
+      onAlarm(retry_code);
+      retry_code = "";
+    }
   }
 }
 
-void startupClock() {
-  Wire.begin();
-  rtc.begin();
-
-  set_zone(0);
-  set_dst(0);
-  set_system_time(rtc.now().getEpoch());
+// Called every second
+void onTick(const DateTime now) {
+#ifdef DEBUG
+  Serial.print("TIME: ");
+  Serial.print(now.hour(), DEC);
+  Serial.print(":");
+  Serial.print(now.minute(), DEC);
+  Serial.print(":");
+  Serial.println(now.second(), DEC);
+#endif
 }
 
 void setup() {
@@ -296,17 +311,15 @@ void setup() {
   deviceState.setState(DeviceState::DEVICE_SERIAL_READY);
   deviceState.loop();
 
-  startupClock();
-  setupTimers();
-  setUpReadTimers();
+  setupFlowSensor();
+  cron.begin(onAlarm, onTick);
 
   espSerial.flush();
   connectWifi();
 }
 
 void loop() {
-  system_tick();
-  Cron.delay(1000);
+  cron.tick();
   
   commands.ReadSerial();
   

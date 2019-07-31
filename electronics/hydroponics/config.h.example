@@ -18,15 +18,26 @@
 #define MQTT_TOWER_ID                 "tower-1" // base path of the topic, ie. home/living/tower-1 (avoid / as first char)
 
 // Rates (CRON EXPRESSION)
-#define RATE_ENV_READ                 "*/15 * * * * *"    // enviroment sensor refresh rates
-#define RATE_WATER_READ               "*/30 * * * * *"    // EC and water temp refresh rates
-#define RATE_WATER_PUMP_READ          "*/5 * * * * *"     // Water Flow Meter refresh rates
-#define RATE_WATER_PUMP_START_RETRY   "*/10 * * * * *"    // retry start time
-#define RATE_WATER_PUMP_FLOW          "*/30 * * * * *"    // time the pump is on
 
-char* const RATE_WATER_PUMP_START[] = {           // times the pump gets started
-  "*/15 * * * * *",
-  "*/20 * * * * *"
+#define CRON_RATES_SIZE               10 // MUST set with the amount of items in the array below
+
+char * const CRON_RATES[] = {
+  // CODE LEN = 10 MAX
+  "ENV_RD   0 */1 *",                   // environment sensor refresh rates > every minute
+  "WATR_RD  0 */5 *",                   // EC and water temp refresh rates > every 5 minutes
+  "WART_FW  */15 * *",                  // Water Flow Meter refresh rates > every 5 secs (only when pump is on)
+
+  "RETRY    */10 * *",                  // retries (everytime something needs to retry will do in this period)
+  
+  // times the pump gets started (exact time)
+  "PUMP_ON  0 0 7",
+  "PUMP_ON  0 0 10",
+  "PUMP_ON  0 0 12",
+  "PUMP_ON  0 0 15",
+  "PUMP_ON  0 0 18",
+  "PUMP_ON  0 0 21",
+
+  "PUMP_OFF 0 15 *"                     // pump Off command > after first 15 minutes
 };
 
 // WaterFlow Pulse frequency (Hz): is flow rate in L/min.
