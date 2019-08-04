@@ -103,6 +103,7 @@ void cmd_mqtt(SerialCommands* sender) {
   if (strcmp(state, "ON") == 0) {
     deviceState.setState(DeviceState::DEVICE_MQTT_ON);
     espReady = true;
+    startup();
     return;
   }
 
@@ -196,6 +197,13 @@ void readWater() {
 
   if (espReady) {
     WaterData wData = water.getData();
+
+    if (wData.temperature < 10) {
+      // Failed reading
+      retry_code = "WATR_RD";
+      return;
+    }
+
     deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;water/temp;");
     espSerial.println(wData.temperature);
@@ -243,7 +251,6 @@ void stopWaterPump() {
 }
 
 void onAlarm(const String code) {
-  
 #ifdef DEBUG
   Serial.println(code);
 #endif
@@ -252,7 +259,7 @@ void onAlarm(const String code) {
   if(code == "WATR_RD") readWater();
   if(code == "WART_FW") readPump();
   if(code == "PUMP_ON") startWaterPump();
-  if(code == "PUMP_OFF") stopWaterPump();
+  if(code == "PUMP_OF") stopWaterPump();
   if(code == "WIFI") connectWifi();
 
   if(code == "RETRY") {
@@ -273,6 +280,11 @@ void onTick(const DateTime now) {
   Serial.print(":");
   Serial.println(now.second(), DEC);
 #endif
+}
+
+void startup() {
+  // when connected to MQTT and started
+  publishWaterPumpState();
 }
 
 void setup() {
