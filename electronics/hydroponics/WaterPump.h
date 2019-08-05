@@ -35,7 +35,7 @@ class WaterPump
   private:
     WaterPumpData data;
     volatile int flow_frequency;
-    unsigned long cloopTime;
+    unsigned long loopTime;
 };
 
 #endif

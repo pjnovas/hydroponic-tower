@@ -34,6 +34,9 @@ The following libraries are needed from arduino (there are others embedded)
 * `[Tower-ID]/water/tds`: Total Dissolved Solids in the water (PPM) 
 * `[Tower-ID]/water/pump/state`: Enum of the WaterPump State (idle/off = 0, on = 1, err_level = 2, err_flow = 3)
 * `[Tower-ID]/water/pump/flow`: Current Water flow (litres / hour)
+* `[Tower-ID]/water/pump/power`: Turn On/Off the pump by sending 1 or 0
+* `[Tower-ID]/box/temp`: Electronics Box Temperature (centigrade)
+* `[Tower-ID]/box/time`: Current electronics time (unix epoch)
 * `[Tower-ID]/errors`: Errors - TODO
 
 ---

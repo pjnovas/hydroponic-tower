@@ -7,7 +7,7 @@ WaterPump::WaterPump() {
   pinMode(PIN_FLOAT_SWITCH, INPUT);
 
   flow_frequency = 0;
-  cloopTime = millis();
+  loopTime = millis();
   
   off();
 }
@@ -47,13 +47,13 @@ void WaterPump::loop() {
   unsigned long currentTime = millis();
   
   // Every second, calculate flow
-  if((currentTime - cloopTime) > 1000)
+  if((currentTime - loopTime) > 1000)
   {
-    float flowRate = ((1000.0 / (currentTime - cloopTime)) * flow_frequency) / WATER_FLOW_PULSE_HZ;
+    float flowRate = ((1000.0 / (currentTime - loopTime)) * flow_frequency) / WATER_FLOW_PULSE_HZ;
     data.waterFlow = (flowRate / 60) * 1000;
     
     flow_frequency = 0; // Reset Counter
-    cloopTime = currentTime;
+    loopTime = currentTime;
   }
   
   if(isOn()){

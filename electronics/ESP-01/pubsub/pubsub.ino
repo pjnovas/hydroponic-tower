@@ -98,6 +98,25 @@ SerialCommand cmd_reset_("RST", cmd_reset);
 SerialCommand cmd_publish_("PUB", cmd_publish);
 SerialCommand cmd_set_("SET", cmd_set);
 
+void onMessageReceive(char* topic, byte* payload, unsigned int length) {
+
+  // Serial.print("MSG RECEIVED TOPIC: ");
+  // Serial.print(topic);
+  // Serial.print(" | VALUE: ");
+  // Serial.println((char)payload[0]);
+  
+  if (strcmp(topic, (String(clientId) + "/water/pump/power").c_str()) == 0) {    
+    switch((char)payload[0]){
+      case '0': // OFF
+        Serial.println("PUMP;OFF");
+        break;
+      case '1': // ON
+        Serial.println("PUMP;ON");
+        break;
+    }
+  }
+}
+
 bool isWifiReady() {
   return WiFi.status() == WL_CONNECTED;
 }
@@ -147,6 +166,7 @@ void connectMQTT() {
         if (client.connect(clientId, NULL, NULL, willTopic_, 0, 1, "OFFLINE", true)) {
           Serial.println("MQTT;ON");
           client.publish(willTopic_, "ONLINE", true);
+          client.subscribe((String(clientId) + "/water/pump/power").c_str());
         }
         else {
           Serial.print("MQTT;TRY;");
@@ -161,6 +181,8 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.hostname(HOSTNAME);
   Serial.begin(SERIAL_BAULRATE);
+
+  client.setCallback(onMessageReceive);
 
   commands.SetDefaultHandler(cmd_unrecognized);
   commands.AddCommand(&cmd_reset_);

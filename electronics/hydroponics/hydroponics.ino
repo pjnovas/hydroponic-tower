@@ -137,10 +137,28 @@ void cmd_pub_ack(SerialCommands* sender) {
   deviceState.setState(DeviceState::DEVICE_PUBLISH_ACK);
 }
 
+void cmd_pump(SerialCommands* sender) {
+  char* state = sender->Next();
+
+#ifdef DEBUG
+  debugSerial.print("PUMP:");
+  debugSerial.println(state);
+#endif
+  
+  if (strcmp(state, "ON") == 0) {
+    startWaterPump();
+  }
+
+  if (strcmp(state, "OFF") == 0) {
+    stopWaterPump();
+  }
+}
+
 // SERIAL COMMANDS
 SerialCommand cmd_wifi_("WIFI", cmd_wifi);
 SerialCommand cmd_mqtt_("MQTT", cmd_mqtt);
 SerialCommand cmd_pub_ack_("PUBOK", cmd_pub_ack);
+SerialCommand cmd_pump_("PUMP", cmd_pump);
 SerialCommand cmd_error_("ERROR", cmd_error);
 
 // Interrupt function
@@ -165,6 +183,19 @@ void publishWaterPumpState() {
   }
 }
 
+void readBox() {
+  if (espReady) {
+    deviceState.setState(DeviceState::DEVICE_PUBLISH);
+    espSerial.print("PUB;box/temp;");
+    espSerial.println(cron.getTemp());
+    
+    delay(delayPUB);
+    deviceState.setState(DeviceState::DEVICE_PUBLISH);
+    espSerial.print("PUB;box/time;");
+    espSerial.println(cron.getTime().unixtime());
+  }
+}
+
 void readEnviroment() {
   enviroment.readData();
   
@@ -184,11 +215,6 @@ void readEnviroment() {
     deviceState.setState(DeviceState::DEVICE_PUBLISH);
     espSerial.print("PUB;env/light;");
     espSerial.println(eData.light);
-
-    delay(delayPUB);
-    deviceState.setState(DeviceState::DEVICE_PUBLISH);
-    espSerial.print("PUB;box/temp;");
-    espSerial.println(cron.getTemp());
   }
 }
 
@@ -224,11 +250,11 @@ void readPump() {
   if (espReady) {
     WaterPumpData wpData2 = waterPump.getData();
     
-    if (wpData2.pumpState == WaterPumpState::PUMP_ON) {
-      deviceState.setState(DeviceState::DEVICE_PUBLISH);
-      espSerial.print("PUB;water/pump/flow;");
-      espSerial.println(wpData2.waterFlow);
-    }
+    // if (wpData2.pumpState == WaterPumpState::PUMP_ON) {
+    deviceState.setState(DeviceState::DEVICE_PUBLISH);
+    espSerial.print("PUB;water/pump/flow;");
+    espSerial.println(wpData2.waterFlow);
+    // }
   }
 }
 
@@ -255,6 +281,7 @@ void onAlarm(const String code) {
   Serial.println(code);
 #endif
 
+  if(code == "BOX_RD") readBox();
   if(code == "ENV_RD") readEnviroment();
   if(code == "WATR_RD") readWater();
   if(code == "WART_FW") readPump();
@@ -284,7 +311,11 @@ void onTick(const DateTime now) {
 
 void startup() {
   // when connected to MQTT and started
+  readBox();
+  delay(delayPUB);
   publishWaterPumpState();
+  delay(delayPUB);
+  readPump();
 }
 
 void setup() {
@@ -301,6 +332,7 @@ void setup() {
   commands.AddCommand(&cmd_wifi_);
   commands.AddCommand(&cmd_mqtt_);
   commands.AddCommand(&cmd_pub_ack_);
+  commands.AddCommand(&cmd_pump_);
   commands.AddCommand(&cmd_error_);
 
   espSerial.begin(SERIAL_BAULRATE);
