@@ -1,3 +1,4 @@
+#include "avr/wdt.h";
 #include "config.h"
 #include "Cron.h"
 
@@ -29,7 +30,6 @@ short delayPUB = 50;
 bool espReady = false;
 String retry_code = "";
 unsigned long hearBeatRTC = 0;
-bool clkRst = false;
 
 //////////
 
@@ -301,6 +301,7 @@ void onAlarm(const String code) {
 
 // Called every second
 void onTick(const DateTime now) {
+  wdt_reset();
   hearBeatRTC = millis();
 
 #ifdef DEBUG
@@ -322,27 +323,25 @@ void startup() {
   publishWaterPumpState();
   delay(delayPUB);
   readPump();
+
+  wdt_enable(WDTO_8S); // 8 seconds
 }
 
 void checkResetRTC() {
-  if (!clkRst && millis() > hearBeatRTC + 3000) {
+  if (millis() > hearBeatRTC + 3000) {
     // 3 seconds has passed from last call
-    // something is wrong > reset RTC()
+    // something is wrong > power off RTC
     
     espSerial.println("PUB;box/clock;0");
     digitalWrite(PIN_POWER_RTC, LOW);
-    clkRst = true;
-  } 
 
-  if (clkRst && millis() > hearBeatRTC + 6000) { // wait 3 more seconds
-    espSerial.println("PUB;box/clock;1");
-    digitalWrite(PIN_POWER_RTC, HIGH);
-    hearBeatRTC = millis(); // reset hearBeatRTC
-    clkRst = false;
-  }
+    // now wait for WDT to fire a reset
+  } 
 }
 
 void setup() {
+  wdt_disable(); // start disabled until startup
+
 #ifdef DEBUG
   debugSerial.begin(SERIAL_DEBUG_BAULRATE);
   while (!debugSerial) {
