@@ -48,7 +48,13 @@ String Cron::isTime(const char* sentence, DateTime now) {
   return "0";
 }
 
-void Cron::tick() {
+void Cron::tick(unsigned long clk) {
+  if (clk < _lastClk + CRON_RATES_READ) { // reduce readings into CRON_RATES_READ ms
+    return;
+  }
+
+  _lastClk = clk;
+
   DateTime now = rtc.now();
   int epoch = now.unixtime();
 

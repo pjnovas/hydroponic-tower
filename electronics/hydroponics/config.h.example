@@ -20,10 +20,11 @@
 // Rates (CRON EXPRESSION)
 
 #define CRON_RATES_SIZE               12 // MUST set with the amount of items in the array below
+#define CRON_RATES_READ               500 // (ms) rate of clock second read (must be less than a second)
 
 char * const CRON_RATES[] = {
   // CODE LEN = 10 MAX
-  "BOX_RD   20 */10 *",                   // box sensor and time refresh reates > every 10 mins
+  "BOX_RD   20 */5 *",                   // box sensor and time refresh reates > every 5 mins
   "ENV_RD   0 */5 *",                   // environment sensor refresh rates > every 5 minutes
   "WATR_RD  10 */5 *",                  // EC and water temp refresh rates > every 5 minutes
   "WART_FW  */30 * *",                  // Water Flow Meter refresh rates > every 5 secs 
@@ -74,6 +75,10 @@ char * const CRON_RATES[] = {
 
 #define PIN_WATER_TEMP_DATA   10 // DS18B20 Encapsulated Data Pin
 
+// RTC Clock is managed under SLA & SLC pins on the board
+// Which on an Arduino Nano are A4 & A5
+#define PIN_POWER_RTC         7 // RTC power pin
+
 /////////////////////////////////////
 // Analog Pins //////////////////////
 
@@ -86,6 +91,3 @@ char * const CRON_RATES[] = {
 // AMT1001 module
 #define PIN_ENV_HUM           A6 // YELLOW
 #define PIN_ENV_TEMP          A7 // WHITE > 10k resistor to GND
-
-// RTC Clock is managed under SLA & SLC pins on the board
-// Which on an Arduino Nano are A4 & A5

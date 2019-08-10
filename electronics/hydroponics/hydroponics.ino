@@ -28,6 +28,8 @@ SerialCommands commands(&espSerial, commands_buffer, sizeof(commands_buffer), "\
 short delayPUB = 50;
 bool espReady = false;
 String retry_code = "";
+unsigned long hearBeatRTC = 0;
+bool clkRst = false;
 
 //////////
 
@@ -299,6 +301,8 @@ void onAlarm(const String code) {
 
 // Called every second
 void onTick(const DateTime now) {
+  hearBeatRTC = millis();
+
 #ifdef DEBUG
   Serial.print("TIME: ");
   Serial.print(now.hour(), DEC);
@@ -311,11 +315,31 @@ void onTick(const DateTime now) {
 
 void startup() {
   // when connected to MQTT and started
+  espSerial.println("PUB;box/clock;1"); // set clock on
+
   readBox();
   delay(delayPUB);
   publishWaterPumpState();
   delay(delayPUB);
   readPump();
+}
+
+void checkResetRTC() {
+  if (!clkRst && millis() > hearBeatRTC + 3000) {
+    // 3 seconds has passed from last call
+    // something is wrong > reset RTC()
+    
+    espSerial.println("PUB;box/clock;0");
+    digitalWrite(PIN_POWER_RTC, LOW);
+    clkRst = true;
+  } 
+
+  if (clkRst && millis() > hearBeatRTC + 6000) { // wait 3 more seconds
+    espSerial.println("PUB;box/clock;1");
+    digitalWrite(PIN_POWER_RTC, HIGH);
+    hearBeatRTC = millis(); // reset hearBeatRTC
+    clkRst = false;
+  }
 }
 
 void setup() {
@@ -328,6 +352,10 @@ void setup() {
 
   commands.SetDefaultHandler(cmd_unrecognized);
 #endif
+
+  // Power ON RTC
+  pinMode(PIN_POWER_RTC, OUTPUT);
+  digitalWrite(PIN_POWER_RTC, HIGH);
   
   commands.AddCommand(&cmd_wifi_);
   commands.AddCommand(&cmd_mqtt_);
@@ -363,10 +391,12 @@ void setup() {
 }
 
 void loop() {
-  cron.tick();
+  cron.tick(millis());
   
   commands.ReadSerial();
   
   waterPump.loop();
   deviceState.loop();
+
+  checkResetRTC();
 }

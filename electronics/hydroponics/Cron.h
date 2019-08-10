@@ -12,7 +12,7 @@ class Cron
   public:
     Cron();
     void begin(alarm_callback onAlarm, tick_callback onTick);
-    void tick();
+    void tick(unsigned long clk);
     DateTime getTime();
     short getTemp();
 
@@ -22,6 +22,7 @@ class Cron
     tick_callback _onTick;
     unsigned short _timerSize;
     char * _timers;
+    unsigned long _lastClk = 0;
     unsigned long lastEpoch = 0;
     bool checkTime(const char *sentence, const short current);
     String isTime(const char* sentence, DateTime now);
