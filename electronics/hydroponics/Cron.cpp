@@ -33,19 +33,19 @@ bool Cron::checkTime(const char *sentence, const short current) {
   return atoi(sentence) == current; // exact
 }
 
-String Cron::isTime(const char* sentence, DateTime now) {
-  char code[8], hours[8], mins[8], secs[8];
-  sscanf(sentence, "%s %4s %4s %4s", &code, &secs, &mins, &hours);
+char Cron::isTime(const char* sentence, DateTime now) {
+  char code, hours[8], mins[8], secs[8];
+  sscanf(sentence, "%c %4s %4s %4s", &code, &secs, &mins, &hours);
 
   if (
      Cron::checkTime(secs, now.second()) && 
      Cron::checkTime(mins, now.minute()) && 
      Cron::checkTime(hours, now.hour())
   ) {
-    return String(code);
+    return code;
   }
 
-  return "0";
+  return '\0';
 }
 
 void Cron::tick(unsigned long clk) {
@@ -62,8 +62,8 @@ void Cron::tick(unsigned long clk) {
     _onTick(now);
 
     for (short i = 0; i < CRON_RATES_SIZE; i++) {
-      const String result = Cron::isTime(CRON_RATES[i], now);
-      if (result != "0") {
+      const char result = Cron::isTime(CRON_RATES[i], now);
+      if (result != '\0') {
         _onAlarm(result);
       }
     }

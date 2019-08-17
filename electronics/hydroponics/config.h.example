@@ -23,23 +23,23 @@
 #define CRON_RATES_READ               500 // (ms) rate of clock second read (must be less than a second)
 
 char * const CRON_RATES[] = {
-  // CODE LEN = 10 MAX
-  "BOX_RD   20 */5 *",                   // box sensor and time refresh reates > every 5 mins
-  "ENV_RD   0 */5 *",                   // environment sensor refresh rates > every 5 minutes
-  "WATR_RD  10 */5 *",                  // EC and water temp refresh rates > every 5 minutes
-  "WART_FW  */30 * *",                  // Water Flow Meter refresh rates > every 5 secs 
+  // CODE is a CHAR
+  "B  20 */5 *",                  // box sensor and time refresh reates > every 5 mins
+  "E  0 */5 *",                   // environment sensor refresh rates > every 5 minutes
+  "W  10 */5 *",                  // EC and water temp refresh rates > every 5 minutes
+  "F  */30 * *",                  // Water Flow Meter refresh rates > every 30 secs 
 
-  "RETRY    */10 * *",                  // retries (everytime something needs to retry will do in this period)
+  "R  */10 * *",                  // retries (everytime something needs to retry will do in this period)
   
-  "PUMP_OF  0 16 *",                    // pump Off command > after first 15 minutes
+  "D  0 16 *",                    // pump Off command > after first 15 minutes
   
   // times the pump gets started (exact time)
-  "PUMP_ON  0 0 7",
-  "PUMP_ON  0 0 10",
-  "PUMP_ON  0 0 12",
-  "PUMP_ON  0 0 15",
-  "PUMP_ON  0 0 18",
-  "PUMP_ON  0 0 21"
+  "U  0 0 7",
+  "U  0 0 10",
+  "U  0 0 12",
+  "U  0 0 15",
+  "U  0 0 18",
+  "U  0 0 21"
 };
 
 // WaterFlow Pulse frequency (Hz): is flow rate in L/min.

@@ -4,7 +4,7 @@
 #include "RTClib.h"
 #include "Arduino.h"
 
-typedef void (*alarm_callback) (const String code);
+typedef void (*alarm_callback) (const char code);
 typedef void (*tick_callback) (const DateTime now);
 
 class Cron
@@ -25,7 +25,7 @@ class Cron
     unsigned long _lastClk = 0;
     unsigned long lastEpoch = 0;
     bool checkTime(const char *sentence, const short current);
-    String isTime(const char* sentence, DateTime now);
+    char isTime(const char* sentence, DateTime now);
 };
 
 #endif

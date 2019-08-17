@@ -28,7 +28,7 @@ SerialCommands commands(&espSerial, commands_buffer, sizeof(commands_buffer), "\
 
 short delayPUB = 50;
 bool espReady = false;
-String retry_code = "";
+char retry_code = '\0';
 unsigned long hearBeatRTC = 0;
 
 //////////
@@ -90,7 +90,7 @@ void cmd_wifi(SerialCommands* sender) {
 
   if (strcmp(state, "OFF") == 0) {
     deviceState.setState(DeviceState::DEVICE_WIFI_OFF);
-    retry_code = "WIFI";
+    retry_code = 'I';
   }
 }
 
@@ -228,7 +228,7 @@ void readWater() {
 
     if (wData.temperature < 10) {
       // Failed reading
-      retry_code = "WATR_RD";
+      retry_code = 'W'; // WATR_RD;
       return;
     }
 
@@ -278,23 +278,23 @@ void stopWaterPump() {
   publishWaterPumpState(); 
 }
 
-void onAlarm(const String code) {
+void onAlarm(const char code) {
 #ifdef DEBUG
   Serial.println(code);
 #endif
 
-  if(code == "BOX_RD") readBox();
-  if(code == "ENV_RD") readEnviroment();
-  if(code == "WATR_RD") readWater();
-  if(code == "WART_FW") readPump();
-  if(code == "PUMP_ON") startWaterPump();
-  if(code == "PUMP_OF") stopWaterPump();
-  if(code == "WIFI") connectWifi();
+  if(code == 'B') readBox(); // BOX_RD
+  if(code == 'E') readEnviroment(); // ENV_RD
+  if(code == 'W') readWater(); // WATR_RD
+  if(code == 'F') readPump(); // WART_FW
+  if(code == 'U') startWaterPump(); // PUMP_ON = UP
+  if(code == 'D') stopWaterPump(); // PUMP_OF = DOWN
+  if(code == 'I') connectWifi(); // WIFI
 
-  if(code == "RETRY") {
-    if (retry_code.length() > 0) {
+  if(code == 'R') { // RETRY
+    if (retry_code != '\0') {
       onAlarm(retry_code);
-      retry_code = "";
+      retry_code = '\0';
     }
   }
 }
