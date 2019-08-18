@@ -1,4 +1,4 @@
-#include "avr/wdt.h";
+// #include "avr/wdt.h";
 #include "config.h"
 #include "Cron.h"
 
@@ -156,11 +156,21 @@ void cmd_pump(SerialCommands* sender) {
   }
 }
 
+void cmd_reset(SerialCommands* sender) {
+#ifdef DEBUG
+  debugSerial.print("RESET");
+#endif
+
+  digitalWrite(PIN_RESET, LOW);
+  delay(3000); // hang for 3 seconds
+}
+
 // SERIAL COMMANDS
 SerialCommand cmd_wifi_("WIFI", cmd_wifi);
 SerialCommand cmd_mqtt_("MQTT", cmd_mqtt);
 SerialCommand cmd_pub_ack_("PUBOK", cmd_pub_ack);
 SerialCommand cmd_pump_("PUMP", cmd_pump);
+SerialCommand cmd_reset_("RESET", cmd_reset);
 SerialCommand cmd_error_("ERROR", cmd_error);
 
 // Interrupt function
@@ -301,7 +311,7 @@ void onAlarm(const char code) {
 
 // Called every second
 void onTick(const DateTime now) {
-  wdt_reset();
+  // wdt_reset();
   hearBeatRTC = millis();
 
 #ifdef DEBUG
@@ -324,7 +334,7 @@ void startup() {
   delay(delayPUB);
   readPump();
 
-  wdt_enable(WDTO_8S); // 8 seconds
+  // wdt_enable(WDTO_4S);
 }
 
 void checkResetRTC() {
@@ -335,12 +345,16 @@ void checkResetRTC() {
     espSerial.println("PUB;box/clock;0");
     digitalWrite(PIN_POWER_RTC, LOW);
 
-    // now wait for WDT to fire a reset
+    delay(3000); // hang for 3 seconds and reset
+    digitalWrite(PIN_RESET, LOW);
   } 
 }
 
 void setup() {
-  wdt_disable(); // start disabled until startup
+  digitalWrite(PIN_RESET, HIGH);
+  pinMode(PIN_RESET, OUTPUT);
+  
+  // wdt_disable(); // start disabled until startup
 
 #ifdef DEBUG
   debugSerial.begin(SERIAL_DEBUG_BAULRATE);
@@ -360,6 +374,7 @@ void setup() {
   commands.AddCommand(&cmd_mqtt_);
   commands.AddCommand(&cmd_pub_ack_);
   commands.AddCommand(&cmd_pump_);
+  commands.AddCommand(&cmd_reset_);
   commands.AddCommand(&cmd_error_);
 
   espSerial.begin(SERIAL_BAULRATE);

@@ -78,6 +78,7 @@ char * const CRON_RATES[] = {
 // RTC Clock is managed under SLA & SLC pins on the board
 // Which on an Arduino Nano are A4 & A5
 #define PIN_POWER_RTC         7 // RTC power pin
+#define PIN_RESET             8 // RESET Arduino
 
 /////////////////////////////////////
 // Analog Pins //////////////////////

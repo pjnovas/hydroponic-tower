@@ -115,6 +115,15 @@ void onMessageReceive(char* topic, byte* payload, unsigned int length) {
         break;
     }
   }
+
+  if (strcmp(topic, (String(clientId) + "/box/reset").c_str()) == 0) {
+    if ((char)payload[0] == '1') {
+       // publish a 0 so it won't come back again
+      if (client.publish((String(clientId) + "/box/reset").c_str(), "0", true)) {
+        Serial.println("RESET"); // send arduino a reset command
+      }
+    }
+  }
 }
 
 bool isWifiReady() {
@@ -166,7 +175,9 @@ void connectMQTT() {
         if (client.connect(clientId, NULL, NULL, willTopic_, 0, 1, "OFFLINE", true)) {
           Serial.println("MQTT;ON");
           client.publish(willTopic_, "ONLINE", true);
+
           client.subscribe((String(clientId) + "/water/pump/power").c_str());
+          client.subscribe((String(clientId) + "/box/reset").c_str());
         }
         else {
           Serial.print("MQTT;TRY;");
