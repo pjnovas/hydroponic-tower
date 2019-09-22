@@ -19,7 +19,7 @@
 
 // Rates (CRON EXPRESSION)
 
-#define CRON_RATES_SIZE               12 // MUST set with the amount of items in the array below
+#define CRON_RATES_SIZE               19 // MUST set with the amount of items in the array below
 #define CRON_RATES_READ               500 // (ms) rate of clock second read (must be less than a second)
 
 char * const CRON_RATES[] = {
@@ -30,16 +30,28 @@ char * const CRON_RATES[] = {
   "F  */30 * *",                  // Water Flow Meter refresh rates > every 30 secs 
 
   "R  */10 * *",                  // retries (everytime something needs to retry will do in this period)
-  
-  "D  0 16 *",                    // pump Off command > after first 15 minutes
-  
-  // times the pump gets started (exact time)
+
+    // times the pump gets started and stopped
   "U  0 0 7",
+  "D  40 0 7",                    // pump Off command > after first 40 seconds
+  
   "U  0 0 10",
-  "U  0 0 12",
+  "D  40 0 10",
+  
+  "U  0 0 13",
+  "D  40 0 13",
+  
   "U  0 0 15",
-  "U  0 0 18",
-  "U  0 0 21"
+  "D  40 0 15",
+  
+  "U  0 0 17",
+  "D  40 0 17",
+  
+  "U  0 0 19",
+  "D  40 0 19",
+  
+  "U  0 0 22",
+  "D  40 0 22"
 };
 
 // WaterFlow Pulse frequency (Hz): is flow rate in L/min.
